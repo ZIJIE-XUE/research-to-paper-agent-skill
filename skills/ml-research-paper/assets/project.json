@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "title": null,
+  "research_question": null,
+  "domain": null,
+  "task_type": null,
+  "primary_endpoint": null,
+  "dataset_sources": [],
+  "model_preference": "gpt-6.1-sol",
+  "reasoning_preference": "xhigh",
+  "actual_model": null,
+  "actual_reasoning": null,
+  "language": "zh-CN",
+  "output_formats": ["md"],
+  "resource_budget": {"max_experiment_seconds": 7200, "max_jobs": 20, "paid_spend_authorized": false},
+  "review": {"max_rounds": 3, "no_improvement_stop_rounds": 2},
+  "authorized_actions": [],
+  "open_questions": []
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "experiment_id": "main-v1",
+  "protocol": "experiments/protocol.md",
+  "inputs": ["experiments/protocol.md", "src/train.py", "data/manifest.json", "data/processed/dataset.csv", "experiments/model-config.json"],
+  "max_jobs": 20,
+  "max_total_seconds": 7200,
+  "jobs": [
+    {
+      "id": "baseline-seed-0",
+      "command": ["{python}", "{project}/src/train.py", "--config", "{project}/experiments/model-config.json", "--seed", "0", "--output-dir", "{run_dir}"],
+      "timeout_seconds": 600,
+      "required_outputs": ["metrics.json", "predictions.csv", "environment.json"]
+    }
+  ]
+}

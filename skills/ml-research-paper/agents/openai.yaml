@@ -1,0 +1,4 @@
+interface:
+  display_name: "机器学习研究及论文生成"
+  short_description: "从文献与创新检验到实验、论文起草、审稿修订和可复现交付的通用工作流"
+  default_prompt: "使用 $ml-research-paper 推进当前机器学习研究，读取已有材料和阶段状态，在预算内完成下一步并保存可恢复成果。"
