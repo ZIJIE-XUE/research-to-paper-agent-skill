@@ -1,0 +1,35 @@
+digraph workflow {
+  graph [rankdir=TB, bgcolor="white", pad=0.35, nodesep=0.55, ranksep=0.42, splines=polyline];
+  node [shape=box, style="rounded,filled", fillcolor="#eff6ff", color="#93b4e8", penwidth=1.3, fontname="Microsoft YaHei", fontsize=16, margin="0.22,0.15"];
+  edge [color="#56718d", arrowsize=0.75, penwidth=1.35, fontname="Microsoft YaHei", fontsize=13];
+  A [label="研究问题与资源范围"];
+  B [label="文献搜集、阅读与创新检验"];
+  C [label="框架与提案初稿"];
+  D [label="数据取得与核查"];
+  E [label="实验设计与协议冻结"];
+  F [label="自动运行与结果验证"];
+  G [label="结果解释与主张台账"];
+  H [label="正式拟稿与润色"];
+  I [label="审稿前完整性检查", shape=diamond, style=filled, fillcolor="#fff5db", color="#d6b55a"];
+  J [label="多视角内部审稿"];
+  K [label="问题与验收标准", shape=diamond, style=filled, fillcolor="#fff5db", color="#d6b55a"];
+  L [label="逐项修订与复审"];
+  M [label="最终完整性检查", shape=diamond, style=filled, fillcolor="#fff5db", color="#d6b55a"];
+  N [label="论文、复现材料、护照与过程记录", fillcolor="#eaf8ef", color="#6ba881"];
+  A -> B;
+  B -> C;
+  C -> D;
+  D -> E;
+  E -> F;
+  F -> G;
+  G -> H;
+  H -> I;
+  I -> G [label="需补证据", constraint=false, color="#b36d49", fontcolor="#9a4f2c"];
+  I -> J [label="通过"];
+  J -> K;
+  K -> L [label="需修订"];
+  L -> H [constraint=false, color="#b36d49", fontcolor="#9a4f2c"];
+  K -> M [label="通过"];
+  M -> H [label="版本或证据失配", constraint=false, color="#b36d49", fontcolor="#9a4f2c"];
+  M -> N [label="通过"];
+}
