@@ -1,9 +1,19 @@
 {
+  "version": "1.1.0",
   "date": "2026-10-29",
-  "scope": "Software validation only; no real research or publication claims",
-  "unit_tests_passed": 14,
+  "scope": "Software validation only; no scientific correctness or acceptance claims",
+  "unit_tests_passed": 27,
   "skill_format_validation": "pass",
-  "integration": {
+  "markdown_local_links": "pass",
+  "cli_smoke": [
+    "init",
+    "status",
+    "passport",
+    "missing-evidence audit fails with exit 1"
+  ],
+  "historical_integration": {
+    "executed_with_version": "1.0.0",
+    "repeated_in_1_1": false,
     "dataset": "synthetic binary classification, 240 rows and 8 features",
     "models": [
       "DummyClassifier",
@@ -20,6 +30,9 @@
   },
   "not_validated": [
     "end-to-end independent scientific research",
+    "source-support semantic accuracy",
+    "claim extraction completeness",
+    "raw-data authenticity",
     "cross-environment execution",
     "paper acceptance or novelty"
   ]

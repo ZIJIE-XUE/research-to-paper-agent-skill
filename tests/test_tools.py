@@ -10,6 +10,7 @@ sys.path.insert(0, str(SCRIPTS))
 from common import inside, read_json, write_json
 import pipeline
 import run_experiments as runner
+import audit_integrity
 
 
 class ProjectTests(unittest.TestCase):
@@ -25,9 +26,15 @@ class ProjectTests(unittest.TestCase):
         artifact = "research/" + stage + ".md"
         (self.root / artifact).write_text("Actual evidence for " + stage, encoding="utf-8")
         path = "research/gates/" + stage + ".json"
-        write_json(self.root / path, {"stage": stage, "verdict": verdict,
+        report = {"stage": stage, "verdict": verdict,
                    "artifacts": [artifact], "checks": [{"name": "content inspected",
-                   "status": "pass", "evidence": [artifact], "note": "Test fixture evidence"}]})
+                   "status": "pass", "evidence": [artifact], "note": "Test fixture evidence"}]}
+        if stage in ("review", "final"):
+            seed_integrity(self.root)
+            phase = "pre_review" if stage == "review" else "final"
+            audit_integrity.audit(self.root, phase)
+            report["integrity_report"] = "research/integrity-" + phase + ".json"
+        write_json(self.root / path, report)
         return path
 
     def test_init_never_overwrites(self):
@@ -143,6 +150,144 @@ class ProjectTests(unittest.TestCase):
         plan["max_jobs"] = 0
         with self.assertRaises(ValueError):
             runner.validate_plan(self.root, plan)
+
+
+def jsonl(root, name, rows):
+    (root / name).write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+
+def seed_integrity(root):
+    (root / "manuscript/draft.md").write_text("Synthetic tool fixture: one plus one is two.", encoding="utf-8")
+    (root / "research/proof.md").write_text("Synthetic arithmetic fixture: 1+1=2.", encoding="utf-8")
+    claim = {"id": "C001", "claim": "One plus one is two", "kind": "theoretical", "status": "supported",
+             "scope": "Synthetic software fixture", "evidence": [{"path": "research/proof.md", "locator": "line 1"}]}
+    jsonl(root, "results/claims.jsonl", [claim])
+    jsonl(root, "literature/records.jsonl", [])
+    jsonl(root, "literature/citation-checks.jsonl", [])
+    jsonl(root, "reviews/issues.jsonl", [])
+    return claim
+
+
+class IntegrityTests(unittest.TestCase):
+    setUp = ProjectTests.setUp
+    tearDown = ProjectTests.tearDown
+    plan = ProjectTests.plan
+    run_plan = ProjectTests.run_plan
+
+    def cited_claim(self):
+        claim = seed_integrity(self.root)
+        claim.update(kind="literature", reference_ids=["L001"])
+        jsonl(self.root, "results/claims.jsonl", [claim])
+        jsonl(self.root, "literature/records.jsonl", [{"id": "L001", "title": "Synthetic fixture, not a real paper"}])
+        check = {"id": "V001", "claim_id": "C001", "reference_id": "L001", "existence": "verified",
+                 "metadata": "verified", "support": "supported", "locator": "line 1",
+                 "checked_at": "test-fixture", "method": "fixture inspection", "evidence": ["research/proof.md"]}
+        jsonl(self.root, "literature/citation-checks.jsonl", [check])
+        return check
+
+    def test_citation_trace_and_report_freshness(self):
+        self.cited_claim()
+        report = audit_integrity.audit(self.root, "pre_review")
+        self.assertEqual(report["verdict"], "pass")
+        self.assertEqual(report["coverage"]["registered_citation_checks"], 1)
+        pipeline.integrity_artifacts(self.root, "research/integrity-pre_review.json", "pre_review")
+        (self.root / "research/proof.md").write_text("Changed source", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            pipeline.integrity_artifacts(self.root, "research/integrity-pre_review.json", "pre_review")
+
+    def test_unavailable_reference_is_not_verified(self):
+        check = self.cited_claim()
+        check["existence"] = "unavailable"
+        jsonl(self.root, "literature/citation-checks.jsonl", [check])
+        self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_orphan_citation_relation_fails(self):
+        check = self.cited_claim()
+        check["claim_id"] = "unknown"
+        jsonl(self.root, "literature/citation-checks.jsonl", [check])
+        self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_final_unresolved_major_blocks(self):
+        seed_integrity(self.root)
+        jsonl(self.root, "reviews/issues.jsonl", [{"id": "R001", "severity": "major", "status": "partial"}])
+        self.assertEqual(audit_integrity.audit(self.root, "final")["verdict"], "fail")
+
+    def test_invalid_review_fields_do_not_silently_pass(self):
+        seed_integrity(self.root)
+        jsonl(self.root, "reviews/issues.jsonl", [{"id": "R001", "severity": "Major", "status": "done"}])
+        self.assertEqual(audit_integrity.audit(self.root, "final")["verdict"], "fail")
+
+    def test_external_results_are_declared_not_certified(self):
+        claim = seed_integrity(self.root)
+        claim.update(kind="empirical", provenance_type="external_reported")
+        jsonl(self.root, "results/claims.jsonl", [claim])
+        result = audit_integrity.audit(self.root, "pre_review")
+        self.assertEqual(result["verdict"], "pass")
+        self.assertTrue(result["warnings"])
+        self.assertEqual(result["coverage"]["verified_local_receipts"], 0)
+
+    def test_local_receipt_verified_and_tampering_blocks(self):
+        self.plan()
+        self.run_plan()
+        claim = seed_integrity(self.root)
+        name = "runs/test-v1/job-0/attempt-0001/receipt.json"
+        claim.update(kind="empirical", provenance_type="local_run", run_receipts=[name])
+        jsonl(self.root, "results/claims.jsonl", [claim])
+        result = audit_integrity.audit(self.root, "pre_review")
+        self.assertEqual(result["verdict"], "pass", result["blockers"])
+        self.assertEqual(result["coverage"]["verified_local_receipts"], 1)
+        write_json(self.root / "runs/test-v1/job-0/attempt-0001/metrics.json", {"metrics": {"score": 1}})
+        self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_local_input_change_blocks_audit(self):
+        self.plan()
+        self.run_plan()
+        claim = seed_integrity(self.root)
+        claim.update(kind="empirical", provenance_type="local_run",
+                     run_receipts=["runs/test-v1/job-0/attempt-0001/receipt.json"])
+        jsonl(self.root, "results/claims.jsonl", [claim])
+        (self.root / "src/train.py").write_text("# modified", encoding="utf-8")
+        self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_missing_claim_population_cannot_pass(self):
+        seed_integrity(self.root)
+        jsonl(self.root, "results/claims.jsonl", [])
+        self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_passport_reports_stale_material(self):
+        helper = ProjectTests.report
+        pipeline.checkpoint(self.root, "scope", helper(self, "scope"))
+        first = pipeline.passport(self.root)
+        self.assertEqual(first["valid_stages"], ["scope"])
+        self.assertIn("research/scope.md", first["artifact_hashes"])
+        (self.root / "research/scope.md").write_text("changed", encoding="utf-8")
+        second = pipeline.passport(self.root)
+        self.assertIn("scope", second["invalid_stages"])
+
+    def test_review_gate_requires_integrity(self):
+        for stage in pipeline.STAGES[:10]:
+            pipeline.checkpoint(self.root, stage, ProjectTests.report(self, stage))
+        report_path = ProjectTests.report(self, "review")
+        report = read_json(self.root / report_path)
+        del report["integrity_report"]
+        write_json(self.root / report_path, report)
+        with self.assertRaisesRegex(ValueError, "requires integrity_report"):
+            pipeline.checkpoint(self.root, "review", report_path)
+
+    def test_legacy_review_receipt_requires_revalidation(self):
+        for stage in pipeline.STAGES[:-1]:
+            pipeline.checkpoint(self.root, stage, ProjectTests.report(self, stage))
+        path = self.root / "research/state.json"
+        state = read_json(path)
+        del state["checkpoints"]["review"]["integrity_report"]
+        write_json(path, state)
+        self.assertIn("review", pipeline.status(self.root)["invalid_stages"])
+
+    def test_integrity_report_phase_cannot_be_swapped(self):
+        seed_integrity(self.root)
+        audit_integrity.audit(self.root, "final")
+        with self.assertRaisesRegex(ValueError, "passing report"):
+            pipeline.integrity_artifacts(self.root, "research/integrity-final.json", "pre_review")
 
 
 if __name__ == "__main__":

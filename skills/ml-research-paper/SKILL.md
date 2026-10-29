@@ -2,12 +2,18 @@
 name: ml-research-paper
 description: "开展通用机器学习实证研究与论文生成：文献搜集和阅读、创新点检验、框架与初稿、数据获取、实验设计与自动运行、结论解释、正式拟稿、润色、审稿及迭代修订。适用于从零研究、已有项目续作或指定单阶段任务；不将一般问答或单句改写扩展为整篇论文。"
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # 机器学习研究及论文生成
 
 将研究问题推进为有证据、可复核的论文；允许有价值的负结果、复制研究和未解决结论。根据课题选择数据、模型、指标、方法与写作结构，不预设金融场景、模型复杂度或正向结果。
+
+## 按模式调用
+
+支持 pipeline、socratic/plan、literature、novelty、design、run、interpret、outline、write、abstract、polish、citation-check、integrity、review、revise、re-review、format/disclosure、status/resume。具体输入、产物及最小执行范围见 [references/modes.md](references/modes.md)。这些是自然语言模式，不创建 slash commands。
+
+完整流程按依赖推进；单阶段任务读取必要材料后直接执行。已有文献集合优先核验使用，已有结果先检查来源。不要因材料跨多个阶段就忽略用户已经明确的任务。默认在现有授权内连续推进；用户选择引导模式时再按其偏好设置讨论点。
 
 ## 进入与续作
 
@@ -68,7 +74,11 @@ metadata:
 
 ### 11. review：审稿及反复修订
 
+先按 [references/integrity.md](references/integrity.md) 生成当前稿的审稿前完整性报告，核对书目存在、引用支持及实验来源，再运行 `audit_integrity.py --project <项目目录> --phase pre_review`。完整流程的 review 检查点绑定通过的报告及全部已核验材料哈希。未通过时先修复；独立审稿任务可以交付带明确材料缺口的范围受限报告，不伪造通过记录。
+
 按 [references/writing-review.md](references/writing-review.md) 从方法、领域贡献、统计、复现、编辑表达进行审查。默认同一代理分阶段、先保存审查结论再修改；如已获授权且支持隔离工作者，可进行独立上下文审查。明确内部模拟审稿身份，不冒称真人外审或错误独立。
+
+审稿阶段保持当前稿只读，先独立记录问题与证据；修订阶段才改稿/追加获授权实验。涉及作者答复时先核对修订稿，再用答复逐项对照。跨学科视角与反方审查用于寻找替代解释和反例，不以角色数量冒充统计独立或真人同行评审。内部审稿不输出未经校准的录用概率。
 
 `reviews/issues.jsonl` 为稳定编号的问题台账；每项写严重度、证据定位、影响、最小修正和验收标准。先修有效性和证据问题，再润色；逐条回应，完成后重读修改稿并复核原问题。实质变更回到相应阶段并使后续检查点失效。
 
@@ -77,6 +87,8 @@ metadata:
 ### 12. final：交付与恢复入口
 
 最终完整性检查见 [references/writing-review.md](references/writing-review.md)。交付论文、参考文献、表图与生成代码、运行配置、数据说明、证据台账、审稿回应、未解决问题和 `research/handoff.md`。用户需要 DOCX/PDF 时采用可用文档工具渲染并视觉检查，相关工具缺失则保留源文件并准确说明。
+
+按 [references/integrity.md](references/integrity.md) 对交付版本重新运行 `audit_integrity.py --project <项目目录> --phase final`。final 检查点须绑定通过的最终报告，且不允许遗留未解决 critical/major。先完成 `research/process-record.md`、交接记录和交付清单，再登记final检查点，最后运行 `pipeline.py passport --project <项目目录>` 导出材料护照；交付范围、检查覆盖和未知状态一并保留。
 
 更新检查点与交付清单，注明实际验证覆盖范围。研究证据不足时交付“研究稿/未完成”状态，不伪造 final PASS。投稿或发布并非完整论文生成的自动终点，只有得到相应授权才执行。
 
@@ -87,3 +99,5 @@ metadata:
 保持一个当前版本入口，旧稿、旧方案和结果保留在版本/运行目录。定期更新 `research/handoff.md`，写当前问题、关键选择、产物、未解决问题、下一步、授权和剩余预算。长运行通过环境允许的后台进程执行并跟踪；跨会话依赖落盘状态。只有用户要求定时或持续后台服务时才配置调度。
 
 本技能可独立使用；ARS、RD-Agent、其他写作/文档技能和模型 API 均为可选能力。没有某个插件时，按可用搜索、Python、终端与文件工具继续，并标明无法完成的外部动作。
+
+按阶段提供必要材料、区分原始数据与核验汇总，信息流与工具出网边界见 [references/integrity.md](references/integrity.md)。这是一套工作协议，不声称脚本对 agent 或训练代码实施了权限隔离。

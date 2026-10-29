@@ -2,7 +2,7 @@
 import argparse
 import json
 from pathlib import Path
-from common import ProjectLock, inside, inventory, now, object_hash, read_json, write_json
+from common import ProjectLock, digest, inside, inventory, now, object_hash, read_json, write_json
 
 STAGES = ("scope", "literature", "novelty", "framework", "data", "design",
           "experiments", "conclusions", "draft", "polish", "review", "final")
@@ -43,8 +43,11 @@ def valid_stages(root, state):
             upstream_valid = False
             continue
         try:
-            matches = inventory(root, receipt["artifacts"]) == receipt["artifacts"]
-        except ValueError:
+            matches = all(inside(root, name).is_file() and digest(inside(root, name)) == expected
+                          for name, expected in receipt["artifacts"].items())
+            if stage in ("review", "final") and not receipt.get("integrity_report"):
+                matches = False  # v1.0 receipts remain historical, not current v1.1 gates.
+        except (OSError, ValueError):
             matches = False
         upstream = {s: object_hash(valid[s]) for s in STAGES[:STAGES.index(stage)] if s in valid}
         if upstream_valid and matches and receipt["upstream"] == upstream:
@@ -63,6 +66,49 @@ def status(project):
             "next_stage": next((s for s in STAGES if s not in valid), None),
             "review_verdict": valid.get("review", {}).get("verdict"),
             "note": "Structural provenance checks only; not a scientific quality certificate."}
+
+
+def integrity_artifacts(root, name, phase):
+    """Bind the integrity report AND every material that report actually checked."""
+    if not isinstance(name, str) or not name:
+        raise ValueError("review/final checkpoint requires integrity_report")
+    path = inside(root, name)
+    report = read_json(path)
+    if report.get("phase") != phase or report.get("verdict") != "pass" or report.get("blockers"):
+        raise ValueError("Integrity report is not a passing report for " + phase)
+    hashes = report.get("artifact_hashes")
+    if not isinstance(hashes, dict) or not hashes:
+        raise ValueError("Integrity report has no bound materials")
+    for artifact, expected in hashes.items():
+        target = inside(root, artifact)
+        if not target.is_file() or digest(target) != expected:
+            raise ValueError("Integrity report is stale: " + artifact)
+    return {**hashes, path.relative_to(root).as_posix(): digest(path)}
+
+
+def passport(project):
+    root = Path(project).resolve()
+    with ProjectLock(root / "research/.checkpoint.lock"):
+        state = read_json(root / "research/state.json")
+        valid, invalid = valid_stages(root, state)
+        names = {"research/state.json", "research/project.json"}
+        for receipt in valid.values():
+            names.update(receipt["artifacts"])
+        for name in ("research/handoff.md", "research/process-record.md", "literature/records.jsonl",
+                     "literature/citation-checks.jsonl", "results/claims.jsonl", "reviews/issues.jsonl",
+                     "research/integrity-pre_review.json", "research/integrity-final.json",
+                     "data/manifest.json", "experiments/plan.json", "experiments/protocol.md"):
+            if inside(root, name).is_file():
+                names.add(name)
+        for path in (root / "runs").glob("*/summary.json"):
+            names.add(path.relative_to(root).as_posix())
+        material_hashes = {name: digest(inside(root, name)) for name in sorted(names)}
+        result = {"schema_version": 1, "created_at": now(), "valid_stages": list(valid),
+                  "invalid_stages": invalid, "next_stage": next((s for s in STAGES if s not in valid), None),
+                  "artifact_hashes": material_hashes,
+                  "scope": "Material inventory only; not execution isolation or a scientific certificate"}
+        write_json(root / "research/passport.json", result)
+        return result
 
 
 def checkpoint(project, stage, report_name):
@@ -90,6 +136,9 @@ def checkpoint(project, stage, report_name):
         if not evidence:
             raise ValueError("A stage requires substantive artifacts")
         artifacts = inventory(root, evidence + [report_name])
+        if stage in ("review", "final"):
+            phase = "pre_review" if stage == "review" else "final"
+            artifacts.update(integrity_artifacts(root, report.get("integrity_report"), phase))
         valid, _ = valid_stages(root, state)
         index = STAGES.index(stage)
         required = STAGES[:index]
@@ -100,6 +149,8 @@ def checkpoint(project, stage, report_name):
         receipt = {"stage": stage, "time": now(), "verdict": verdict,
                    "artifacts": artifacts,
                    "upstream": {s: object_hash(valid[s]) for s in required}}
+        if stage in ("review", "final"):
+            receipt["integrity_report"] = report["integrity_report"]
         invalidated = []
         for later in STAGES[index:]:
             previous = state["checkpoints"].pop(later, None)
@@ -114,7 +165,7 @@ def checkpoint(project, stage, report_name):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="action", required=True)
-    for action in ("init", "status", "checkpoint"):
+    for action in ("init", "status", "passport", "checkpoint"):
         cmd = commands.add_parser(action)
         cmd.add_argument("--project", required=True)
         if action == "checkpoint":

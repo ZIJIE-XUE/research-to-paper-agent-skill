@@ -36,6 +36,8 @@ checkpoint 要求前序阶段有效、证据文件非空、通过检查有路径
 
 review 可记录 `verdict: revise`，表示审查已执行但需修订；此时 final 被拒绝。修订从最早受影响阶段重新登记，重走必要检查，review 最终通过后才可能 final。脚本不读懂科学语义、不自动评判创新或重大问题；这些由报告及问题台账支持，不能将结构检查当质量证明。
 
+v1.1 起 review/final 报告必须包含 `integrity_report`，分别指向审稿前/最终完整性报告；完整性报告绑定的全部材料同时进入阶段哈希清单。示例为 `"integrity_report": "research/integrity-pre_review.json"`。v1.0 研究项目保留旧记录，但重做 review/final 时先补充主张/引用/实验来源台账并运行当前审计；不能用旧任意 pass 报告替代。审计与材料护照命令见 [integrity.md](integrity.md)。
+
 ## 训练程序契约
 
 agent 实现项目专用训练/评估代码，接收配置、种子和输出目录。计划中 `command` 为参数数组，以 `shell=False` 运行；支持 `{python}`、`{project}`、`{run_dir}` 三个占位。进程工作目录为本任务的新输出目录；输入必须显式定位。工具执行普通本地代码，不是权限沙箱，也不自动禁止联网。

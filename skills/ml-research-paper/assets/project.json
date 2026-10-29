@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
+  "skill_version": "1.1.0",
+  "mode": "pipeline",
+  "interaction": "autonomous_within_authorization",
   "title": null,
   "research_question": null,
   "domain": null,
@@ -14,6 +17,7 @@
   "output_formats": ["md"],
   "resource_budget": {"max_experiment_seconds": 7200, "max_jobs": 20, "paid_spend_authorized": false},
   "review": {"max_rounds": 3, "no_improvement_stop_rounds": 2},
+  "integrity": {"pre_review_required": true, "final_required": true, "semantic_completeness": "unknown"},
   "authorized_actions": [],
   "open_questions": []
 }
