@@ -1,0 +1,24 @@
+name: Bug report / 问题反馈
+description: Report a reproducible skill or tool failure / 报告可复现的问题
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior / 预期与实际结果
+      description: Which command or skill mode did you use?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction / 最小复现
+      description: Include only public or synthetic input; remove keys, private papers and personal data.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python, OS and agent runtime / 环境
+      placeholder: Python 3.13, Windows 11, Codex
+    validations:
+      required: true
