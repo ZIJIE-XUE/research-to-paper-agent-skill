@@ -195,6 +195,13 @@ class IntegrityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale"):
             pipeline.integrity_artifacts(self.root, "research/integrity-pre_review.json", "pre_review")
 
+    def test_integrity_report_accepts_equivalent_project_path(self):
+        self.cited_claim()
+        audit_integrity.audit(self.root, "pre_review")
+        alias = self.root / ".." / self.root.name
+        result = pipeline.integrity_artifacts(alias, "research/integrity-pre_review.json", "pre_review")
+        self.assertIn("research/integrity-pre_review.json", result)
+
     def test_unavailable_reference_is_not_verified(self):
         check = self.cited_claim()
         check["existence"] = "unavailable"

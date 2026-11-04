@@ -70,6 +70,7 @@ def status(project):
 
 def integrity_artifacts(root, name, phase):
     """Bind the integrity report AND every material that report actually checked."""
+    root = Path(root).resolve()
     if not isinstance(name, str) or not name:
         raise ValueError("review/final checkpoint requires integrity_report")
     path = inside(root, name)
