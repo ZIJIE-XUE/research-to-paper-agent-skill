@@ -33,7 +33,7 @@
     "source-support semantic accuracy",
     "claim extraction completeness",
     "raw-data authenticity",
-    "cross-environment execution",
+    "cross-environment reproduction of a real scientific study",
     "paper acceptance or novelty"
   ],
   "public_launch_validation": {
@@ -44,6 +44,17 @@
     "verified_jobs_reused": 4,
     "registered_claims_audited": 4,
     "scientific_study_performed": false,
-    "generated_outputs_committed": false
+    "generated_outputs_committed": false,
+    "cross_platform_ci": {
+      "date": "2026-11-04",
+      "scope": "28 behavioral tests and offline synthetic demo",
+      "platforms": [
+        "ubuntu-latest",
+        "windows-latest"
+      ],
+      "result": "success",
+      "code_commit": "06b826c0bc686c44a2aebd7dbd06fad167d005b1",
+      "url": "https://github.com/ZIJIE-XUE/research-to-paper-agent-skill/actions/runs/41775896275"
+    }
   }
 }
