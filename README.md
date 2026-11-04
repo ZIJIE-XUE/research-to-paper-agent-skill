@@ -5,7 +5,7 @@
 [English](README.md) · [简体中文](README.zh-CN.md)
 
 [![Tests](https://github.com/ZIJIE-XUE/research-to-paper-agent-skill/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIJIE-XUE/research-to-paper-agent-skill/actions/workflows/tests.yml)
-[![Version](https://img.shields.io/badge/skill-1.1.1-blue)](skills/ml-research-paper/SKILL.md)
+[![Version](https://img.shields.io/badge/skill-1.1.2-blue)](skills/ml-research-paper/SKILL.md)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](examples/quick_demo.py)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -21,6 +21,7 @@ Designed for classification, regression, forecasting, tabular ML, computer visio
 - **Resume with evidence.** Successful jobs are reused only after output hashes are checked. Changed inputs or protocols require a new experiment ID.
 - **Inspect citations at four levels.** The agent checks existence, metadata, source location and whether the source supports the claim; Python checks the registered relationships and files.
 - **Revise against explicit issues.** Review findings have stable IDs, evidence locations and acceptance criteria. Pre-review and final integrity reports bind the material versions they checked.
+- **Make handoffs explicit.** Record plan-versus-execution differences, negative results and limitations; compare claim wording across revisions. These are agent-reviewed records, not automatic semantic guarantees.
 - **Keep research portable.** A material passport, handoff and process record help a new session pick up the same study.
 
 Negative results and replication studies are valid outcomes. The skill does not promise novelty, scientific truth or paper acceptance. Human authors remain responsible for their research.

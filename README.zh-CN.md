@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-[![Version](https://img.shields.io/badge/version-1.1.1-blue)](skills/ml-research-paper/SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.1.2-blue)](skills/ml-research-paper/SKILL.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](skills/ml-research-paper/scripts)
 
@@ -74,6 +74,7 @@ python examples/quick_demo.py
 - **多视角内部审稿**：方法、统计、领域贡献、复现、编辑与反方检视；不冒充真人外审或已校准的录用预测。
 - **修订与复审闭环**：稳定问题编号、逐项回应、原验收标准和回归检查；默认最多3轮实质修订，可按预算调整。
 - **两道完整性检查**：审稿前与最终交付前检查登记对象；review/final检查点绑定报告和材料版本。
+- **明确实验交接**：登记计划与实际差异、负面结果和已知限制；复审对比论断范围与确定程度。由agent/作者核查，不宣称自动语义保证。
 - **材料护照与过程记录**：保存阶段、来源、产物哈希、实验汇总、研究决策与未知项，便于跨会话继续。
 
 ## 完整工作流

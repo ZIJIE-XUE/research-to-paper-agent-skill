@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "record_status": "unfilled",
+  "study_id": null,
+  "planned_protocol": {
+    "path": null,
+    "sha256": null,
+    "timing_relative_to_results": "unknown"
+  },
+  "actual_execution": {
+    "provenance_type": "unknown",
+    "run_receipts": [],
+    "external_evidence": [],
+    "coverage_note": null
+  },
+  "plan_vs_actual": {"status": "unknown", "entries": []},
+  "negative_results": {"status": "unknown", "items": []},
+  "known_limitations": {"status": "unknown", "items": []},
+  "claim_constraints": {"status": "unknown", "items": []},
+  "reviewed_by": null,
+  "reviewed_at": null
+}
