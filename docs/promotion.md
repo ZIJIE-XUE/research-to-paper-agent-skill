@@ -1,6 +1,6 @@
 # Public launch copy / 公开介绍文案
 
-这些是可由维护者选用、修改后发布的草稿；本文件不表示已经在外部社区发帖。请按社区当时的自荐规则选择相关渠道，避免重复投放。
+本文件保留通用介绍草稿。2026-11-04已在三个相关社区的展示区发布定制介绍，见 [发布记录与帖子链接](outreach/README.md)。继续使用草稿时，应核对目标社区当时的自荐规则。
 
 ## 中文：研究者/开发者社区
 
@@ -16,9 +16,9 @@
 
 [仓库与示例](https://github.com/ZIJIE-XUE/research-to-paper-agent-skill)
 
-## English: Show HN / research tooling community
+## English: developer / research tooling community
 
-Title: Show HN: An agent skill connecting ML experiments to manuscript evidence
+Title: An agent skill connecting ML experiments to manuscript evidence
 
 I made my machine learning research-to-paper workflow public as an agent skill. It covers literature, research questions, experiment design and execution, writing, and revision, with entry points for individual stages.
 
@@ -39,3 +39,7 @@ Made my ML research-to-paper agent skill public: literature, bounded local exper
 先分享一个能实际复现的例子与遇到的问题，邀请具体反馈。收到问题后在Issues中公开答复并修正文档。隔一段时间在GitHub Traffic中比较访客、克隆、来源与后续反馈；这些指标会波动，不能把一次分享后的变化都归因于某个标签或标题。
 
 不要购买浏览、互刷Star、编造使用者或声称已经得到第三方学术验证。后续发布优先提供新的可运行示例和真实改进。
+
+## 渠道限制
+
+未向Hacker News自动发帖；其 [当前规则](https://news.ycombinator.com/newsguidelines.html) 明确禁止自动发帖和生成式/AI编辑文字。以上英文草稿不应原样代发到HN。
