@@ -5,7 +5,7 @@
 [English](README.md) · [简体中文](README.zh-CN.md)
 
 [![Tests](https://github.com/ZIJIE-XUE/research-to-paper-agent-skill/actions/workflows/tests.yml/badge.svg)](https://github.com/ZIJIE-XUE/research-to-paper-agent-skill/actions/workflows/tests.yml)
-[![Version](https://img.shields.io/badge/skill-1.1.2-blue)](skills/ml-research-paper/SKILL.md)
+[![Version](https://img.shields.io/badge/skill-1.1.3-blue)](skills/ml-research-paper/SKILL.md)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](examples/quick_demo.py)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 

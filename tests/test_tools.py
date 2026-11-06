@@ -1,6 +1,7 @@
 """Behavioral tests: provenance, resumption, failure handling and budgets."""
 import json
 from pathlib import Path
+import shutil
 import sys
 import tempfile
 import unittest
@@ -245,6 +246,39 @@ class IntegrityTests(unittest.TestCase):
         self.assertEqual(result["coverage"]["verified_local_receipts"], 1)
         write_json(self.root / "runs/test-v1/job-0/attempt-0001/metrics.json", {"metrics": {"score": 1}})
         self.assertEqual(audit_integrity.audit(self.root, "pre_review")["verdict"], "fail")
+
+    def test_misfiled_success_receipt_blocks_resume_and_audit(self):
+        plan = self.plan(
+            "import json, sys\nfrom pathlib import Path\n"
+            "Path('metrics.json').write_text(json.dumps({'metrics': {'score': int(sys.argv[1])}}))\n",
+            jobs=2,
+        )
+        for index, job in enumerate(plan["jobs"]):
+            job["command"].append(str(index))
+        write_json(self.root / "experiments/plan.json", plan)
+        self.assertEqual(self.run_plan()["status"], "complete")
+
+        experiment = self.root / "runs/test-v1"
+        first = experiment / "job-0/attempt-0001"
+        second = experiment / "job-1/attempt-0001"
+        self.assertNotEqual(read_json(first / "metrics.json"), read_json(second / "metrics.json"))
+        second.rename(experiment / "saved-attempt")
+        shutil.copytree(first, second)
+
+        claim = seed_integrity(self.root)
+        receipt = (second / "receipt.json").relative_to(self.root).as_posix()
+        claim.update(kind="empirical", provenance_type="local_run", run_receipts=[receipt],
+                     evidence=[{"path": (second / "metrics.json").relative_to(self.root).as_posix(),
+                                "locator": "metrics.score"}])
+        jsonl(self.root, "results/claims.jsonl", [claim])
+        with self.subTest("resume"):
+            with self.assertRaisesRegex(ValueError, "job ID mismatch"):
+                self.run_plan()
+        with self.subTest("audit"):
+            report = audit_integrity.audit(self.root, "pre_review")
+            self.assertEqual(report["verdict"], "fail", report["blockers"])
+            self.assertIn("job ID mismatch", report["blockers"][0])
+            self.assertEqual(report["coverage"]["verified_local_receipts"], 0)
 
     def test_local_input_change_blocks_audit(self):
         self.plan()

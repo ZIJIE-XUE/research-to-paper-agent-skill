@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 from common import digest, inside, inventory, now, object_hash, read_json, write_json
-from run_experiments import finite_metrics, validate_plan
+from run_experiments import finite_metrics, validate_plan, validate_receipt_identity
 
 
 def audit(project, phase, manuscript="manuscript/draft.md"):
@@ -99,15 +99,20 @@ def audit(project, phase, manuscript="manuscript/draft.md"):
                         receipt = read_json(path)
                         if receipt.get("status") != "success" or receipt.get("exit_code") != 0:
                             raise ValueError("Local execution receipt is not successful: " + name)
+                        lock_path = path.parents[2] / "protocol.lock.json"
+                        remember(lock_path.relative_to(root))
+                        frozen = read_json(lock_path)
+                        plan = frozen["plan"]
+                        job_id = path.parent.parent.name
+                        validate_receipt_identity(path, receipt, job_id, object_hash(frozen))
+                        if not any(job["id"] == job_id for job in plan["jobs"]):
+                            raise ValueError("Receipt job ID is missing from the frozen plan: " + name)
+                        if validate_plan(root, plan) != frozen:
+                            raise ValueError("Frozen local inputs/protocol no longer match: " + name)
                         outputs = receipt.get("outputs", {})
                         if not outputs or inventory(path.parent, outputs) != outputs:
                             raise ValueError("Local execution outputs changed: " + name)
                         finite_metrics(path.parent / "metrics.json")
-                        lock_path = path.parents[2] / "protocol.lock.json"
-                        remember(lock_path.relative_to(root))
-                        frozen = read_json(lock_path)
-                        if object_hash(frozen) != receipt.get("fingerprint") or validate_plan(root, frozen["plan"]) != frozen:
-                            raise ValueError("Frozen local inputs/protocol no longer match: " + name)
                         for output in outputs:
                             remember((path.parent / output).relative_to(root))
                         for input_name in frozen["inputs"]:

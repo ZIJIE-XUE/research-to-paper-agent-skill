@@ -25,7 +25,7 @@
 
 `results/claims.jsonl` 继续使用既有 id、claim、kind、status、scope 和 evidence；补充 `reference_ids` 数组，标明实际引用关系。empirical 主张增加来源类型：
 
-- `provenance_type: local_run`，附 `run_receipts` 相对路径数组，指向本运行器产生的成功回执。脚本核验冻结输入、输出哈希和有限数值契约。
+- `provenance_type: local_run`，附 `run_receipts` 相对路径数组，指向本运行器产生的成功回执。脚本核验回执的任务 ID 与目录及冻结计划是否一致，并检查冻结输入、输出哈希和有限数值契约。恢复备份后应重新运行审计。
 - `provenance_type: external_reported`，原始日志/输出/协议作为 evidence，并说明由谁声明、如何取得、实际核验覆盖。只能证明交接材料存在及支持关系的声明，不能写成本工具验证了执行。
 
 每项 evidence 使用 `{"path":"相对路径","locator":"表/行/公式等定位"}`。文献性主张需要 `reference_ids`，理论/解释性主张关联证明、假设或支持性分析。最终通过要求台账内正式断言的实际措辞有支持；尚未检验的假设放在提案或局限中，不冒充已证实结论。

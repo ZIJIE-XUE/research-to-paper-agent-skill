@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-[![Version](https://img.shields.io/badge/version-1.1.2-blue)](skills/ml-research-paper/SKILL.md)
+[![Version](https://img.shields.io/badge/version-1.1.3-blue)](skills/ml-research-paper/SKILL.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](skills/ml-research-paper/scripts)
 

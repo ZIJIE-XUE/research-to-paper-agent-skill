@@ -68,6 +68,13 @@ def validate_plan(root, plan):
     return {"plan": plan, "inputs": inputs, "protocol_sha256": digest(protocol)}
 
 
+def validate_receipt_identity(path, receipt, job_id, fingerprint):
+    if receipt.get("job_id") != job_id:
+        raise ValueError(f"Receipt job ID mismatch at {path}: expected {job_id!r}, found {receipt.get('job_id')!r}")
+    if receipt.get("fingerprint") != fingerprint:
+        raise ValueError(f"Receipt does not match the frozen experiment: {path}")
+
+
 def verified_success(run_dir, receipt):
     try:
         return (receipt["status"] == "success" and receipt["outputs"] and
@@ -99,6 +106,9 @@ def run(project, plan_name):
             job_root.mkdir(exist_ok=True)
             previous = sorted(job_root.glob("attempt-*/receipt.json"))
             receipts = [read_json(p) for p in previous]
+            for path, receipt in zip(previous, receipts):
+                if receipt.get("status") == "success":
+                    validate_receipt_identity(path, receipt, job["id"], fingerprint)
             success = next(((p, r) for p, r in zip(previous, receipts)
                             if verified_success(p.parent, r)), None)
             if success:
